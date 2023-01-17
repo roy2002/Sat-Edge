@@ -2,6 +2,7 @@ import numpy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math.sqrt as sqrt
 
 class DiceLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
@@ -69,6 +70,43 @@ class IoULoss(nn.Module):
 # PyTorch
 ALPHA = 0.8
 GAMMA = 2
+
+class MCCLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(MCCLoss, self).__init__()
+
+        def forward(inputs, targets):
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+
+            TP = (inputs * targets).sum()
+            TN = ((1 - targets) * (1 - inputs)).sum()
+            FP = ((1 - targets) * inputs).sum()
+            FN = (targets * (1 - inputs)).sum()
+
+            MCC = (TP*TN) - (FP * FN)/sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN))
+
+            return 1-MCC
+
+
+class RecallLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(RecallLoss, self).__init__()
+
+        def forward(inputs, targets):
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+
+            TP = (inputs * targets).sum()
+            # TN = ((1 - targets) * (1 - inputs)).sum()
+            FP = ((1 - targets) * inputs).sum()
+            FN = (targets * (1 - inputs)).sum()
+
+            recall = TP/(TP + FP)
+
+            return 1-recall
+
+
 
 class SensitivityLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
