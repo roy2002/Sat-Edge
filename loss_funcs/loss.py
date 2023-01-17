@@ -70,6 +70,79 @@ class IoULoss(nn.Module):
 ALPHA = 0.8
 GAMMA = 2
 
+class SensitivityLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(SensitivityLoss, self).__init__()
+
+        def forward(inputs, targets):
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+
+            TP = (inputs * targets).sum()
+            # TN = ((1 - targets) * (1 - inputs)).sum()
+            # FP = ((1 - targets) * inputs).sum()
+            FN = (targets * (1 - inputs)).sum()
+
+            sens = TP/(TP + FN)
+
+
+
+
+
+class SpecificityLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(SpecificityLoss, self).__init__()
+
+        def forward(inputs, targets):
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+
+            TP = (inputs * targets).sum()
+            TN = ((1 - targets) * (1 - inputs)).sum()
+            FP = ((1 - targets) * inputs).sum()
+            FN = (targets * (1 - inputs)).sum()
+
+            spec = TN/(TN + FP)
+
+            return 1 - spec
+
+
+class PrecisionLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(PrecisionLoss, self).__init__()
+
+        def forward(inputs, targets):
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+
+            TP = (inputs * targets).sum()
+            # TN = ((1 - targets) * (1 - inputs)).sum()
+            FP = ((1 - targets) * inputs).sum()
+            # FN = (targets * (1 - inputs)).sum()
+
+            prec = TP/(TP + FP)
+
+            return 1-prec
+
+
+class AccuracyLoss(nn.module):
+    def __init__(self, weight):
+        super(AccuracyLoss, self).__init__()
+
+        def forward(inputs, targets):
+            inputs = inputs.view(-1)
+            targets = targets.view(-1)
+
+            TP = (inputs * targets).sum()
+            TN = ((1-targets) * (1 - inputs)).sum()
+            FP = ((1 - targets) * inputs).sum()
+            FN = (targets * (1 - inputs)).sum()
+
+            acc = TP/(TP + FP + FN + TN)
+
+            return 1 - acc
+
+
 
 class FocalLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
