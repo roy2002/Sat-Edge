@@ -85,6 +85,8 @@ class SensitivityLoss(nn.Module):
 
             sens = TP/(TP + FN)
 
+            return 1-sens
+
 
 
 
